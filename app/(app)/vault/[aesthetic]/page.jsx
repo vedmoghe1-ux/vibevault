@@ -51,8 +51,14 @@ export default function AestheticPage({ params }) {
 
         {!shown.length && (
           <div className="glass empty">
-            <p style={{ fontWeight: 600 }}>No {a.name} look uses that piece yet.</p>
-            <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>Clear the filter, or build the look yourself and list it in Thrift &amp; Sell.</p>
+            <p style={{ fontWeight: 600 }}>
+              {looks.length === 0 ? `${a.name} looks are coming soon.` : `No ${a.name} look uses that piece yet.`}
+            </p>
+            <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
+              {looks.length === 0
+                ? "This category is set up and ready — outfits get added here as they're curated."
+                : <>Clear the filter, or build the look yourself and list it in Thrift &amp; Sell.</>}
+            </p>
           </div>
         )}
       </div>

@@ -2,7 +2,7 @@ import "./globals.css";
 import { AuraProvider } from "@/lib/store";
 
 export const metadata = {
-  title: "VibeCheck — Style Vault",
+  title: "Aura — Style Vault",
   description: "Eight aesthetics, every piece linked. Find looks that already sound like you.",
 };
 

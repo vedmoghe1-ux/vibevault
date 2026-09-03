@@ -2,27 +2,52 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronLeft } from "lucide-react";
+import { Check, ChevronLeft, Sparkles, Flame } from "lucide-react";
 import { AESTHETICS, byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Magnetic, ease } from "@/components/motion";
 
-const BUDGETS = ["Thrift-first (under $80)", "Mid ($80–200)", "Investment ($200+)", "Mixed — depends on the piece"];
+/* Budget tiers, priced for the Indian market. "Main Character Energy" is
+   deliberately the visually loudest option — badge, glow, and the
+   middle position where the eye lands first — since it's the tier we
+   want the most people to land on. */
+const BUDGETS = [
+  { id: "thrift", range: "₹500 – ₹2,500", name: "Broke Bestie Era", emoji: "🫰" },
+  { id: "main", range: "₹2,500 – ₹5,000", name: "Main Character Energy", emoji: "✨", popular: true },
+  { id: "boss", range: "₹5,000 – ₹10,000", name: "Boss Era Budget", emoji: "💼" },
+  { id: "nolimit", range: "₹10,000+", name: "Old Money Whisper", emoji: "👑" },
+];
+
 const FITS = ["Oversized", "Tailored", "Cropped", "Layered", "Body-skimming", "Long line"];
+
+const HYPE = [
+  "Pick a couple to get started.",
+  "One more and the feed can start balancing between them.",
+  (names) => `Reading you as ${names}. Feed's already warming up.`,
+  (names) => `${names} — okay, this is a whole personality now.`,
+  (names) => `${names}. We might know you better than your group chat does.`,
+];
 
 export default function Onboarding() {
   const { user, setUser } = useAura();
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [vibes, setVibes] = useState(user?.vibes ?? []);
-  const [budget, setBudget] = useState(user?.budget ?? BUDGETS[1]);
+  const [budgetId, setBudgetId] = useState(
+    BUDGETS.find((b) => b.name === user?.budget)?.id ?? "main"
+  );
   const [fit, setFit] = useState(user?.fit ?? []);
+  const [launching, setLaunching] = useState(false);
 
-  const toggle = (arr, set, v) => set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
-  const save = (prefs) => {
+  const toggleFit = (v) => setFit((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
+  const pickVibe = (id) => setVibes((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
+
+  const finish = (prefs) => {
     setUser({ ...(user ?? { name: "guest", email: "" }), ...prefs });
-    router.push("/for-you");
+    setLaunching(true);
+    setTimeout(() => router.push("/for-you"), 480);
   };
+  const budgetName = BUDGETS.find((b) => b.id === budgetId)?.name ?? BUDGETS[1].name;
 
   const steps = [
     { title: "What's your core vibe?", sub: "Pick at least two. This is what the For You feed is built from.", ok: vibes.length >= 2 },
@@ -31,43 +56,86 @@ export default function Onboarding() {
   ];
   const cur = steps[step];
   const lead = vibes[0] ? byId(vibes[0]) : AESTHETICS[0];
+  const names = vibes.map((v) => byId(v).name).join(" × ");
+  const hypeIdx = Math.min(vibes.length, HYPE.length - 1);
+  const hypeLine = typeof HYPE[hypeIdx] === "function" ? HYPE[hypeIdx](names) : HYPE[hypeIdx];
 
   return (
     <main className="onboard" style={{ "--a1": lead.a1, "--a2": lead.a2 }}>
-      <div className="glass glass-hi onboard-card">
+      <AnimatePresence>
+        {launching && (
+          <motion.div className="launch-flash" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ background: `radial-gradient(circle at 50% 50%, ${lead.a1}, ${lead.a2})` }} />
+        )}
+      </AnimatePresence>
+
+      <motion.div className="glass glass-hi onboard-card" animate={launching ? { scale: 1.04, opacity: 0 } : { scale: 1, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <div className="onboard-head">
           <span className="kicker">Step {step + 1} of 3 · welcome, {user?.name ?? "friend"}</span>
-          <button className="btn btn-quiet" onClick={() => save({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget, fit })}>
+          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, fit })}>
             Skip for now
           </button>
         </div>
 
-        <div className="meter"><motion.i animate={{ width: `${((step + 1) / 3) * 100}%` }} transition={{ duration: 0.6, ease }} /></div>
+        <div className="meter meter-glow"><motion.i animate={{ width: `${((step + 1) / 3) * 100}%` }} transition={{ duration: 0.6, ease }} /></div>
 
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 22 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -22 }} transition={{ duration: 0.35, ease }}>
-            <h2 className="onboard-h2">{cur.title}</h2>
+            <div className="onboard-title-row">
+              <h2 className="onboard-h2">{cur.title}</h2>
+              {step === 0 && vibes.length > 0 && (
+                <motion.span className="vibe-count" key={vibes.length}
+                  initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 420, damping: 16 }}>
+                  {vibes.length} picked
+                </motion.span>
+              )}
+            </div>
             <p className="muted onboard-sub">{cur.sub}</p>
 
-            <motion.div className="chips" layout>
-              {step === 0 && AESTHETICS.map((a) => (
-                <motion.button layout key={a.id} className="chip chip-lg" data-on={vibes.includes(a.id)}
-                  whileTap={{ scale: 0.93 }} onClick={() => toggle(vibes, setVibes, a.id)}>
-                  <span className="chip-dot" style={{ background: `linear-gradient(135deg, ${a.a1}, ${a.a2})` }} />{a.name}
-                </motion.button>
-              ))}
-              {step === 1 && BUDGETS.map((b) => (
-                <motion.button layout key={b} className="chip chip-lg" data-on={budget === b} whileTap={{ scale: 0.93 }} onClick={() => setBudget(b)}>{b}</motion.button>
-              ))}
-              {step === 2 && FITS.map((f) => (
-                <motion.button layout key={f} className="chip chip-lg" data-on={fit.includes(f)} whileTap={{ scale: 0.93 }} onClick={() => toggle(fit, setFit, f)}>{f}</motion.button>
-              ))}
-            </motion.div>
+            {step === 0 && (
+              <motion.div className="chips" layout>
+                {AESTHETICS.map((a) => (
+                  <VibeChip key={a.id} a={a} on={vibes.includes(a.id)} onPick={() => pickVibe(a.id)} />
+                ))}
+              </motion.div>
+            )}
 
-            {step === 0 && vibes.length > 0 && (
-              <p className="muted read">
-                {vibes.length === 1 ? "One more and the feed can start balancing between them." : `Reading you as ${vibes.map((v) => byId(v).name).join(" × ")}.`}
-              </p>
+            {step === 1 && (
+              <div className="budget-grid">
+                {BUDGETS.map((b) => (
+                  <motion.button key={b.id} className="budget-card" data-on={budgetId === b.id} data-popular={b.popular}
+                    whileTap={{ scale: 0.96 }} onClick={() => setBudgetId(b.id)}
+                    animate={b.popular && budgetId !== b.id ? { boxShadow: ["0 0 0 rgba(255,111,165,0)", "0 0 26px rgba(255,111,165,.35)", "0 0 0 rgba(255,111,165,0)"] } : {}}
+                    transition={b.popular ? { duration: 2.4, repeat: Infinity, ease: "easeInOut" } : {}}>
+                    {b.popular && <span className="budget-badge"><Flame size={12} /> Most picked</span>}
+                    <span className="budget-emoji">{b.emoji}</span>
+                    <span className="budget-name">{b.name}</span>
+                    <span className="budget-range tabular">{b.range}</span>
+                    {budgetId === b.id && (
+                      <motion.span className="budget-check" initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring", stiffness: 500, damping: 18 }}>
+                        <Check size={14} />
+                      </motion.span>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            )}
+
+            {step === 2 && (
+              <motion.div className="chips" layout>
+                {FITS.map((f) => (
+                  <motion.button layout key={f} className="chip chip-lg" data-on={fit.includes(f)} whileTap={{ scale: 0.93 }} onClick={() => toggleFit(f)}>{f}</motion.button>
+                ))}
+              </motion.div>
+            )}
+
+            {step === 0 && (
+              <AnimatePresence mode="wait">
+                <motion.p key={hypeIdx + (vibes.length > 0 ? "on" : "off")} className="muted read"
+                  initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+                  {hypeLine}
+                </motion.p>
+              </AnimatePresence>
             )}
           </motion.div>
         </AnimatePresence>
@@ -78,12 +146,37 @@ export default function Onboarding() {
           </button>
           <Magnetic>
             <button className="btn btn-solid" disabled={!cur.ok}
-              onClick={() => (step === 2 ? save({ vibes, budget, fit }) : setStep((s) => s + 1))}>
-              {step === 2 ? "Open my vault" : "Continue"} <Check size={16} />
+              onClick={() => (step === 2 ? finish({ vibes, budget: budgetName, fit }) : setStep((s) => s + 1))}>
+              {step === 2 ? "Open my vault" : "Continue"} <Sparkles size={16} />
             </button>
           </Magnetic>
         </div>
-      </div>
+      </motion.div>
     </main>
+  );
+}
+
+/* A vibe chip that pops a small sparkle burst the moment it's picked —
+   the "reward" beat that makes selecting feel worth doing again. */
+function VibeChip({ a, on, onPick }) {
+  const [burst, setBurst] = useState(0);
+  return (
+    <span className="vibe-chip-wrap">
+      <motion.button layout className="chip chip-lg" data-on={on} whileTap={{ scale: 0.9 }}
+        onClick={() => { onPick(); if (!on) setBurst((b) => b + 1); }}>
+        <span className="chip-dot" style={{ background: `linear-gradient(135deg, ${a.a1}, ${a.a2})` }} />{a.name}
+      </motion.button>
+      <AnimatePresence>
+        {burst > 0 && (
+          <motion.span key={burst} className="chip-spark" style={{ color: a.a2 }}
+            initial={{ opacity: 1, scale: 0.3, y: 0, rotate: 0 }}
+            animate={{ opacity: 0, scale: 1.4, y: -18, rotate: 40 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            onAnimationComplete={() => setBurst(0)}>
+            <Sparkles size={16} fill="currentColor" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
   );
 }

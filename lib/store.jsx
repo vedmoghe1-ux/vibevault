@@ -21,7 +21,7 @@ export function AuraProvider({ children }) {
   const [listings, setListings] = useState(SEED_LISTINGS);
   const [toast, setToastRaw] = useState(null);
   const [hydrated, setHydrated] = useState(false);
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("INR");
 
   useEffect(() => {
     try {
