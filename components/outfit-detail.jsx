@@ -3,7 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Bookmark, ChevronLeft, Flame, ShoppingBag } from "lucide-react";
-import { byId, money } from "@/lib/data";
+import { byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Badge } from "./ui";
 import { Magnetic, ease } from "./motion";
@@ -59,7 +59,7 @@ export function Mannequin({ items, activeSlot, onSlot, palette }) {
 
 export function OutfitDetail({ outfit }) {
   const a = byId(outfit.aesthetic);
-  const { saved, toggleSave, toastMsg } = useAura();
+  const { saved, toggleSave, toastMsg, formatPrice } = useAura();
   const [slot, setSlot] = useState(null);
   const isSaved = saved.includes(outfit.id);
   const ordered = SLOTS.flatMap((s) => outfit.items.filter((i) => i.slot === s));
@@ -108,7 +108,7 @@ export function OutfitDetail({ outfit }) {
             <Magnetic>
               <a className="btn btn-solid" href={ordered[0].url} target="_blank" rel="noopener noreferrer"
                 onClick={() => toastMsg("Opening the first piece in a new tab")}>
-                <ShoppingBag size={17} /> Get the look · {money(total)}
+                <ShoppingBag size={17} /> Get the look · {formatPrice(total)}
               </a>
             </Magnetic>
             <button className="btn btn-ghost" onClick={() => toggleSave(outfit.id)}>
@@ -118,7 +118,7 @@ export function OutfitDetail({ outfit }) {
 
           <div className="detail-head">
             <h2 style={{ fontSize: 20 }}>Every piece in this look</h2>
-            <span className="kicker">{ordered.length} items · {money(total)} total</span>
+            <span className="kicker">{ordered.length} items · {formatPrice(total)} total</span>
           </div>
 
           <div className="glass ledger">
@@ -132,7 +132,7 @@ export function OutfitDetail({ outfit }) {
                     <p className="kicker" style={{ marginTop: 3 }}>{it.slot} · {it.brand}</p>
                   </div>
                   <div className="row-buy">
-                    <span className="tabular row-price">{money(it.price)}</span>
+                    <span className="tabular row-price">{formatPrice(it.price)}</span>
                     <a className="btn btn-ghost btn-xs" href={it.url} target="_blank" rel="noopener noreferrer">
                       Buy <ArrowUpRight size={14} />
                     </a>

@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { SEED_LISTINGS, AESTHETICS } from "./data";
+import { CURRENCIES, formatMoney } from "./currency";
 
 /* Single source of truth for session + user data.
    Swap the three localStorage effects for Supabase calls:
@@ -20,6 +21,7 @@ export function AuraProvider({ children }) {
   const [listings, setListings] = useState(SEED_LISTINGS);
   const [toast, setToastRaw] = useState(null);
   const [hydrated, setHydrated] = useState(false);
+  const [currency, setCurrency] = useState("USD");
 
   useEffect(() => {
     try {
@@ -29,6 +31,7 @@ export function AuraProvider({ children }) {
         setUser(s.user ?? null);
         setSaved(s.saved ?? []);
         if (s.listings) setListings(s.listings);
+        if (s.currency) setCurrency(s.currency);
       }
     } catch {}
     setHydrated(true);
@@ -36,8 +39,8 @@ export function AuraProvider({ children }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings }));
-  }, [user, saved, listings, hydrated]);
+    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings, currency }));
+  }, [user, saved, listings, currency, hydrated]);
 
   const toastMsg = useCallback((msg) => {
     setToastRaw(msg);
@@ -65,10 +68,13 @@ export function AuraProvider({ children }) {
     ? AESTHETICS.find((a) => a.id === user.vibes[0])
     : AESTHETICS[0];
 
+  const formatPrice = useCallback((usd) => formatMoney(usd, currency), [currency]);
+
   return (
     <Ctx.Provider value={{
       user, setUser, saved, toggleSave, listings, publish, promote,
       toast, toastMsg, hydrated,
+      currency, setCurrency, currencies: CURRENCIES, formatPrice,
       themeVars: { "--a1": theme.a1, "--a2": theme.a2 },
     }}>
       {children}

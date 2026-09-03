@@ -1,9 +1,12 @@
 "use client";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Bookmark, Flame, Heart, Sparkles, Check, ShoppingBag, Rocket, BadgeCheck } from "lucide-react";
-import { byId, money } from "@/lib/data";
-import { Tilt, riseIn } from "./motion";
+import { byId } from "@/lib/data";
+import { useAura } from "@/lib/store";
+import { Tilt, ScrollReveal } from "./motion";
 import { Badge } from "./ui";
 
 export const posterBg = (o) => {
@@ -14,10 +17,38 @@ export const posterBg = (o) => {
           linear-gradient(158deg, ${t[0]}, ${t[t.length - 1]})`;
 };
 
+/* Tap-triggered heart burst — a mobile-native "double-tap to like" feel.
+   Fires on the tap itself, not a hover state, so it reads on phones. */
+function SaveButton({ saved, onSave }) {
+  const [burst, setBurst] = useState(0);
+  return (
+    <span className="save-btn-wrap">
+      <button className="badge icon-badge" aria-label={saved ? "Remove from saved" : "Save this look"}
+        onClick={(e) => { e.preventDefault(); e.stopPropagation(); onSave(); if (!saved) setBurst((b) => b + 1); }}
+        style={{ color: saved ? "var(--a1)" : "inherit" }}>
+        <Bookmark size={14} fill={saved ? "currentColor" : "none"} />
+      </button>
+      <AnimatePresence>
+        {burst > 0 && (
+          <motion.span key={burst} className="heart-burst"
+            initial={{ opacity: 1, scale: 0.4, y: 0 }}
+            animate={{ opacity: 0, scale: 1.6, y: -22 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.65, ease: "easeOut" }}
+            onAnimationComplete={() => setBurst(0)}>
+            <Heart size={20} fill="currentColor" />
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </span>
+  );
+}
+
 export function OutfitCard({ outfit, saved, onSave, match }) {
   const a = byId(outfit.aesthetic);
+  const { formatPrice } = useAura();
   return (
-    <motion.div variants={riseIn} layout>
+    <ScrollReveal>
       <Tilt style={{ "--a1": a.a1, "--a2": a.a2 }}>
         <Link href={`/vault/${outfit.aesthetic}/${outfit.id}`} className="poster glass" style={{ height: 340, display: "block" }}>
           <div className="poster-bg" style={{ background: posterBg(outfit) }} />
@@ -30,30 +61,26 @@ export function OutfitCard({ outfit, saved, onSave, match }) {
                 {outfit.promoted && <Badge kind="badge-hot"><Flame size={12} /> Featured</Badge>}
                 {match != null && <Badge><Sparkles size={12} /> {match}% match</Badge>}
               </div>
-              <button className="badge icon-badge" aria-label={saved ? "Remove from saved" : "Save this look"}
-                onClick={(e) => { e.preventDefault(); onSave(outfit.id); }}
-                style={{ color: saved ? "var(--a1)" : "inherit" }}>
-                <Bookmark size={14} fill={saved ? "currentColor" : "none"} />
-              </button>
+              <SaveButton saved={saved} onSave={() => onSave(outfit.id)} />
             </div>
             <div>
               <h3 className="poster-title">{outfit.title}</h3>
               <div className="poster-meta">
                 <span>{outfit.curator}</span>
                 <span className="tabular"><Heart size={11} /> {outfit.saves.toLocaleString()}</span>
-                <span className="tabular">{outfit.items.length} pieces · {money(outfit.items.reduce((s, i) => s + i.price, 0))}</span>
+                <span className="tabular">{outfit.items.length} pieces · {formatPrice(outfit.items.reduce((s, i) => s + i.price, 0))}</span>
               </div>
             </div>
           </div>
         </Link>
       </Tilt>
-    </motion.div>
+    </ScrollReveal>
   );
 }
 
 export function AestheticCard({ a, count, picked }) {
   return (
-    <motion.div variants={riseIn} layout>
+    <ScrollReveal>
       <Tilt max={6} style={{ "--a1": a.a1, "--a2": a.a2 }}>
         <Link href={`/vault/${a.id}`} className="poster glass" style={{ height: 250, display: "block" }}>
           <div className="poster-bg" style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}66, transparent 70%), radial-gradient(60% 60% at 78% 82%, ${a.a2}55, transparent 70%), ${a.tone}` }} />
@@ -72,14 +99,15 @@ export function AestheticCard({ a, count, picked }) {
           </div>
         </Link>
       </Tilt>
-    </motion.div>
+    </ScrollReveal>
   );
 }
 
 export function ListingCard({ l, onBuy, onPromote }) {
   const a = byId(l.aesthetic);
+  const { formatPrice } = useAura();
   return (
-    <motion.div variants={riseIn} layout>
+    <ScrollReveal>
       <Tilt max={5} style={{ "--a1": a.a1, "--a2": a.a2 }}>
         <article className="glass listing">
           <div className="poster listing-art">
@@ -98,7 +126,7 @@ export function ListingCard({ l, onBuy, onPromote }) {
               <p className="kicker" style={{ marginTop: 7 }}>{l.seller} · {a.name} · {l.condition}</p>
             </div>
             <div className="listing-foot">
-              <span className="display tabular" style={{ fontSize: 21 }}>{money(l.price)}</span>
+              <span className="display tabular" style={{ fontSize: 21 }}>{formatPrice(l.price)}</span>
               {l.mine && !l.promoted
                 ? <button className="btn btn-ghost btn-sm" onClick={() => onPromote(l)}><Rocket size={14} /> Promote</button>
                 : <button className="btn btn-solid btn-sm" onClick={() => onBuy(l)}><ShoppingBag size={14} /> Buy</button>}
@@ -106,6 +134,6 @@ export function ListingCard({ l, onBuy, onPromote }) {
           </div>
         </article>
       </Tilt>
-    </motion.div>
+    </ScrollReveal>
   );
 }

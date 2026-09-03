@@ -36,13 +36,13 @@ export default function AuthPage() {
 
   const social = (provider) => {
     setBusy(true);
-    setTimeout(() => finish({ name: "aura.friend", email: `demo@${provider}.mock`, vibes: [], budget: "Mid ($80–200)", fit: [] }, true), 700);
+    setTimeout(() => finish({ name: "vibecheck.friend", email: `demo@${provider}.mock`, vibes: [], budget: "Mid ($80–200)", fit: [] }, true), 700);
   };
 
   return (
     <main className="auth" style={themeVars}>
       <div className="auth-col">
-        <div className="brand"><Sparkles size={20} className="accent" /><span className="display brand-word">aura</span></div>
+        <div className="brand"><Sparkles size={20} className="accent" /><span className="display brand-word">vibecheck</span></div>
 
         <div className="auth-form">
           <h1 className="auth-h1">{mode === "signup" ? "Find the clothes that already sound like you." : "Back to the vault."}</h1>
@@ -82,7 +82,7 @@ export default function AuthPage() {
           <p className="kicker" style={{ marginTop: 16 }}>Social sign-in is mocked — wire it to supabase.auth.signInWithOAuth.</p>
         </div>
 
-        <p className="kicker">Aura · a style vault, not another shopping tab</p>
+        <p className="kicker">VibeCheck · a style vault, not another shopping tab</p>
       </div>
 
       <AuthArt />

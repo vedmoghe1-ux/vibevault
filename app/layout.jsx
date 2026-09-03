@@ -2,8 +2,15 @@ import "./globals.css";
 import { AuraProvider } from "@/lib/store";
 
 export const metadata = {
-  title: "Aura — Style Vault",
+  title: "VibeCheck — Style Vault",
   description: "Eight aesthetics, every piece linked. Find looks that already sound like you.",
+};
+
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0A0910",
 };
 
 export default function RootLayout({ children }) {

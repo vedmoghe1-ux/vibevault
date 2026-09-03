@@ -70,6 +70,24 @@ export const riseIn = {
   show: { opacity: 1, y: 0, transition: { duration: 0.5, ease } },
 };
 
+/* Scroll-triggered reveal — the mobile-native counterpart to hover effects.
+   Fires once as each card enters the viewport while scrolling, which is
+   the interaction a phone actually has (no cursor to hover with). */
+export function ScrollReveal({ children, className = "" }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y: 22, scale: 0.97 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+      viewport={{ once: true, amount: 0.35 }}
+      whileTap={{ scale: 0.96 }}
+      transition={{ duration: 0.5, ease }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
 export function Page({ children, className = "" }) {
   return (
     <motion.div variants={stagger} initial="hidden" animate="show" exit={{ opacity: 0, y: -8 }} className={className}>

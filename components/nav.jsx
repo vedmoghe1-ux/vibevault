@@ -45,7 +45,7 @@ export function Rail() {
 }
 
 export function TopBar({ onSell }) {
-  const { user } = useAura();
+  const { user, currency, setCurrency, currencies } = useAura();
   const [q, setQ] = useState("");
   const router = useRouter();
   const submit = (e) => { e.preventDefault(); if (q.trim().length > 1) router.push(`/vault?q=${encodeURIComponent(q.trim())}`); };
@@ -58,6 +58,12 @@ export function TopBar({ onSell }) {
           placeholder="Search looks, brands, or pieces" />
         {q && <button type="button" onClick={() => setQ("")} aria-label="Clear search" className="muted"><X size={16} /></button>}
       </form>
+      <label className="chip currency-picker">
+        <span className="sr-only">Currency</span>
+        <select aria-label="Currency" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          {currencies.map((c) => <option key={c.code} value={c.code} style={{ background: "#110E1A" }}>{c.label}</option>)}
+        </select>
+      </label>
       <button className="btn btn-ghost" onClick={onSell}><Tag size={16} /> Sell a piece</button>
       <Link href="/saved" className="chip"><User size={15} /> {user?.name ?? "guest"}</Link>
     </div>

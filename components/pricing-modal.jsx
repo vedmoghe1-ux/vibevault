@@ -9,7 +9,7 @@ import { Magnetic, ease } from "./motion";
 
 export function PricingModal({ open, onClose, target }) {
   const [pick, setPick] = useState("blaze");
-  const { promote, toastMsg } = useAura();
+  const { promote, toastMsg, formatPrice } = useAura();
 
   /* Supabase: create a `promotions` row + a Stripe checkout session. */
   const confirm = () => {
@@ -44,7 +44,7 @@ export function PricingModal({ open, onClose, target }) {
                   {t.popular && <Badge kind="badge-hot">Most picked</Badge>}
                 </div>
                 <h3 style={{ fontSize: 22, marginTop: 14 }}>{t.name}</h3>
-                <p className="display tabular tier-price">${t.price}</p>
+                <p className="display tabular tier-price">{formatPrice(t.price)}</p>
                 <p className="kicker" style={{ marginTop: 4 }}>for {t.days} days</p>
                 <hr className="hair" style={{ margin: "16px 0" }} />
                 <ul className="tier-list">
@@ -59,7 +59,7 @@ export function PricingModal({ open, onClose, target }) {
           <p className="kicker" style={{ maxWidth: "42ch" }}>No auto-renewal. If a promoted item doesn't sell within its run, Blaze and Icon include a free re-list.</p>
           <Magnetic>
             <button className="btn btn-solid" onClick={confirm}>
-              <Flame size={16} /> {target ? `Promote for $${TIERS.find((t) => t.id === pick).price}` : "Choose this tier"}
+              <Flame size={16} /> {target ? `Promote for ${formatPrice(TIERS.find((t) => t.id === pick).price)}` : "Choose this tier"}
             </button>
           </Magnetic>
         </div>
