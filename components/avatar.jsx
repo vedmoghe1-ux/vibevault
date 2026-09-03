@@ -42,6 +42,17 @@ export function Avatar({ skin = "#C68B59", hair = "short", hairColor = "#1B1512"
       )}
       <Hair style={hair} color={hairColor} />
 
+      {/* face — big soft Snapchat-style eyes, a light blush, a small smile */}
+      <g>
+        <ellipse cx="108" cy="60" rx="6.5" ry="8.5" fill="#1B1512" />
+        <ellipse cx="132" cy="60" rx="6.5" ry="8.5" fill="#1B1512" />
+        <circle cx="110.2" cy="57" r="2.1" fill="#fff" />
+        <circle cx="134.2" cy="57" r="2.1" fill="#fff" />
+        <ellipse cx="98" cy="70" rx="6" ry="3.5" fill="#FF9E9E" opacity="0.35" />
+        <ellipse cx="142" cy="70" rx="6" ry="3.5" fill="#FF9E9E" opacity="0.35" />
+        <path d="M111 76 Q120 82 129 76" stroke="#1B1512" strokeWidth="2.4" strokeLinecap="round" fill="none" opacity="0.75" />
+      </g>
+
       {/* garments — same slot logic as the outfit mannequin */}
       {has("Bottoms") && (
         <motion.g animate={{ opacity: dim("Bottoms") }} onClick={() => onSlot?.(activeSlot === "Bottoms" ? null : "Bottoms")} style={{ cursor: onSlot ? "pointer" : "default" }}>

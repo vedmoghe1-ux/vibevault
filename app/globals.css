@@ -193,7 +193,7 @@ input, textarea, select { font: inherit; color: inherit; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
-.marquee { display: flex; gap: 34px; animation: slide 34s linear infinite; width: max-content; }
+.marquee { display: flex; gap: 34px; animation: slide 68s linear infinite; width: max-content; }
 @keyframes slide { to { transform: translateX(-50%); } }
 
 button, a, [role="button"] { -webkit-tap-highlight-color: transparent; touch-action: manipulation; }

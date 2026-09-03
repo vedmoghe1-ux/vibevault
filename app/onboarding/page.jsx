@@ -165,7 +165,7 @@ export default function Onboarding() {
             {step === 4 && (
               <div className="avatar-builder">
                 <div className="avatar-preview">
-                  <Avatar skin={skin} hair={hair} hairColor={hairColor} size={150} />
+                  <Avatar skin={skin} hair={hair} hairColor={hairColor} size={100} />
                 </div>
                 <div className="avatar-controls">
                   <div>

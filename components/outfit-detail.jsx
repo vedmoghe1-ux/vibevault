@@ -137,7 +137,7 @@ export function OutfitDetail({ outfit }) {
                   <div style={{ minWidth: 0 }}>
                     <p className="row-name">{it.name}</p>
                     <p className="kicker" style={{ marginTop: 3 }}>{it.slot} · {it.brand}</p>
-                    {it.description && <p className="row-why">"{it.description}" — why it's in this look</p>}
+                    {it.description && <p className="row-why">{it.description}</p>}
                   </div>
                   <div className="row-buy">
                     <span className="tabular row-price">{formatPrice(it.price)}</span>
