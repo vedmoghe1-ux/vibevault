@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader } from "lucide-react";
-import { AESTHETICS } from "@/lib/data";
+import { AESTHETICS, OUTFITS } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Field } from "@/components/ui";
+import { FlatLay } from "@/components/flatlay";
 import { Magnetic, ease } from "@/components/motion";
 
 export default function AuthPage() {
@@ -97,13 +98,21 @@ function AuthArt() {
     return () => clearInterval(t);
   }, []);
   const a = AESTHETICS[i];
+  const sample = OUTFITS.find((o) => o.aesthetic === a.id);
   return (
     <div className="glass auth-art">
       <motion.div className="auth-art-bg" animate={{ opacity: 1 }}
         style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}55, transparent 70%), radial-gradient(60% 60% at 75% 80%, ${a.a2}44, transparent 70%), ${a.tone}`, transition: "background 1.1s ease" }} />
       <div className="grain" />
       <div className="auth-art-body">
-        <p className="kicker">currently trending in the vault</p>
+        <p className="kicker">what {a.name.toLowerCase()} actually looks like</p>
+        {sample && (
+          <AnimatePresence mode="wait">
+            <motion.div key={a.id} className="auth-art-flatlay" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease }}>
+              <FlatLay items={sample.items} />
+            </motion.div>
+          </AnimatePresence>
+        )}
         <AnimatePresence mode="wait">
           <motion.div key={a.id} initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.45, ease }}>
             <h2 className="auth-art-h2">{a.name}</h2>

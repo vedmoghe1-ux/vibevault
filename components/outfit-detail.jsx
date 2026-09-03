@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowUpRight, Bookmark, ChevronLeft, Flame, ShoppingBag } from "lucide-react";
 import { byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
+import { Avatar } from "./avatar";
 import { Badge } from "./ui";
 import { Magnetic, ease } from "./motion";
 import { posterBg } from "./cards";
@@ -59,7 +60,7 @@ export function Mannequin({ items, activeSlot, onSlot, palette }) {
 
 export function OutfitDetail({ outfit }) {
   const a = byId(outfit.aesthetic);
-  const { saved, toggleSave, toastMsg, formatPrice } = useAura();
+  const { saved, toggleSave, toastMsg, formatPrice, user } = useAura();
   const [slot, setSlot] = useState(null);
   const isSaved = saved.includes(outfit.id);
   const ordered = SLOTS.flatMap((s) => outfit.items.filter((i) => i.slot === s));
@@ -75,7 +76,9 @@ export function OutfitDetail({ outfit }) {
           <div className="poster-bg" style={{ background: posterBg(outfit) }} />
           <div className="grain" />
           <div className="detail-figure">
-            <Mannequin items={outfit.items} activeSlot={slot} onSlot={setSlot} palette={a} />
+            {user?.avatar
+              ? <Avatar skin={user.avatar.skin} hair={user.avatar.hair} hairColor={user.avatar.hairColor} items={outfit.items} activeSlot={slot} onSlot={setSlot} size={100} />
+              : <Mannequin items={outfit.items} activeSlot={slot} onSlot={setSlot} palette={a} />}
           </div>
           {ordered.map((it) => {
             const [x, y] = HOT[it.slot] ?? [50, 50];
@@ -128,7 +131,9 @@ export function OutfitDetail({ outfit }) {
               <div key={it.id}>
                 <div className="row" data-on={slot === it.slot}
                   onMouseEnter={() => setSlot(it.slot)} onMouseLeave={() => setSlot(null)}>
-                  <span className="swatch" style={{ background: it.tone }} />
+                  <span className="swatch" style={it.image ? undefined : { background: it.tone }}>
+                    {it.image && <img src={it.image} alt="" className="swatch-img" />}
+                  </span>
                   <div style={{ minWidth: 0 }}>
                     <p className="row-name">{it.name}</p>
                     <p className="kicker" style={{ marginTop: 3 }}>{it.slot} · {it.brand}</p>

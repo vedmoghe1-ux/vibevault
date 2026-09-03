@@ -7,6 +7,7 @@ import { Bookmark, Flame, Heart, Sparkles, Check, ShoppingBag, Rocket, BadgeChec
 import { byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Tilt, ScrollReveal } from "./motion";
+import { FlatLay } from "./flatlay";
 import { Badge } from "./ui";
 
 export const posterBg = (o) => {
@@ -53,6 +54,9 @@ export function OutfitCard({ outfit, saved, onSave, match }) {
         <Link href={`/vault/${outfit.aesthetic}/${outfit.id}`} className="poster glass" style={{ height: 340, display: "block" }}>
           <div className="poster-bg" style={{ background: posterBg(outfit) }} />
           <div className="grain" />
+          {outfit.image
+            ? <img src={outfit.image} alt="" className="poster-photo" />
+            : <div className="poster-flatlay"><FlatLay items={outfit.items} /></div>}
           <div className="poster-word">{a.name}</div>
           <div className="tilt-glare" />
           <div className="poster-body">
