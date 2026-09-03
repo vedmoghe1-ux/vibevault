@@ -37,6 +37,9 @@ export default function Onboarding() {
     BUDGETS.find((b) => b.name === user?.budget)?.id ?? "main"
   );
   const [fit, setFit] = useState(user?.fit ?? []);
+  const [height, setHeight] = useState(user?.height ?? "");
+  const [weight, setWeight] = useState(user?.weight ?? "");
+  const [shoeSize, setShoeSize] = useState(user?.shoeSize ?? "");
   const [launching, setLaunching] = useState(false);
 
   const toggleFit = (v) => setFit((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
@@ -53,6 +56,7 @@ export default function Onboarding() {
     { title: "What's your core vibe?", sub: "Pick at least two. This is what the For You feed is built from.", ok: vibes.length >= 2 },
     { title: "Where do you usually spend?", sub: "We hide the pieces that are wildly out of range.", ok: true },
     { title: "How do you like things to fit?", sub: "Optional, but it sharpens the recommendations.", ok: true },
+    { title: "Your sizes, once and for all", sub: "Enter these now and you'll never have to type them again on this device.", ok: true },
   ];
   const cur = steps[step];
   const lead = vibes[0] ? byId(vibes[0]) : AESTHETICS[0];
@@ -71,13 +75,13 @@ export default function Onboarding() {
 
       <motion.div className="glass glass-hi onboard-card" animate={launching ? { scale: 1.04, opacity: 0 } : { scale: 1, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <div className="onboard-head">
-          <span className="kicker">Step {step + 1} of 3 · welcome, {user?.name ?? "friend"}</span>
-          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, fit })}>
+          <span className="kicker">Step {step + 1} of {steps.length} · welcome, {user?.name ?? "friend"}</span>
+          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, fit, height, weight, shoeSize })}>
             Skip for now
           </button>
         </div>
 
-        <div className="meter meter-glow"><motion.i animate={{ width: `${((step + 1) / 3) * 100}%` }} transition={{ duration: 0.6, ease }} /></div>
+        <div className="meter meter-glow"><motion.i animate={{ width: `${((step + 1) / steps.length) * 100}%` }} transition={{ duration: 0.6, ease }} /></div>
 
         <AnimatePresence mode="wait">
           <motion.div key={step} initial={{ opacity: 0, x: 22 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -22 }} transition={{ duration: 0.35, ease }}>
@@ -129,6 +133,26 @@ export default function Onboarding() {
               </motion.div>
             )}
 
+            {step === 3 && (
+              <div className="size-grid">
+                <div className="float">
+                  <input type="number" inputMode="numeric" value={height} data-filled={String(height).length > 0}
+                    onChange={(e) => setHeight(e.target.value)} placeholder=" " />
+                  <label>Height (cm)</label>
+                </div>
+                <div className="float">
+                  <input type="number" inputMode="numeric" value={weight} data-filled={String(weight).length > 0}
+                    onChange={(e) => setWeight(e.target.value)} placeholder=" " />
+                  <label>Weight (kg)</label>
+                </div>
+                <div className="float">
+                  <input type="number" inputMode="numeric" step="0.5" value={shoeSize} data-filled={String(shoeSize).length > 0}
+                    onChange={(e) => setShoeSize(e.target.value)} placeholder=" " />
+                  <label>Shoe size (UK)</label>
+                </div>
+              </div>
+            )}
+
             {step === 0 && (
               <AnimatePresence mode="wait">
                 <motion.p key={hypeIdx + (vibes.length > 0 ? "on" : "off")} className="muted read"
@@ -146,8 +170,8 @@ export default function Onboarding() {
           </button>
           <Magnetic>
             <button className="btn btn-solid" disabled={!cur.ok}
-              onClick={() => (step === 2 ? finish({ vibes, budget: budgetName, fit }) : setStep((s) => s + 1))}>
-              {step === 2 ? "Open my vault" : "Continue"} <Sparkles size={16} />
+              onClick={() => (step === steps.length - 1 ? finish({ vibes, budget: budgetName, fit, height, weight, shoeSize }) : setStep((s) => s + 1))}>
+              {step === steps.length - 1 ? "Open my vault" : "Continue"} <Sparkles size={16} />
             </button>
           </Magnetic>
         </div>
@@ -162,9 +186,13 @@ function VibeChip({ a, on, onPick }) {
   const [burst, setBurst] = useState(0);
   return (
     <span className="vibe-chip-wrap">
-      <motion.button layout className="chip chip-lg" data-on={on} whileTap={{ scale: 0.9 }}
+      <motion.button layout className="chip chip-lg vibe-chip" data-on={on} whileTap={{ scale: 0.9 }}
         onClick={() => { onPick(); if (!on) setBurst((b) => b + 1); }}>
-        <span className="chip-dot" style={{ background: `linear-gradient(135deg, ${a.a1}, ${a.a2})` }} />{a.name}
+        <span className="chip-dot" style={{ background: `linear-gradient(135deg, ${a.a1}, ${a.a2})` }} />
+        <span className="vibe-chip-text">
+          <span>{a.name}</span>
+          <span className="vibe-chip-promise">{a.promise}</span>
+        </span>
       </motion.button>
       <AnimatePresence>
         {burst > 0 && (

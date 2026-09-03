@@ -1,14 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Sparkles, Compass, Store, Bookmark, LogOut, Search, Tag, User, X } from "lucide-react";
+import { Sparkles, Compass, Users, Bookmark, LogOut, Search, User, X } from "lucide-react";
 import { useState } from "react";
 import { useAura } from "@/lib/store";
 
 export const NAV = [
   { href: "/for-you", label: "For you", icon: Sparkles },
   { href: "/vault", label: "Style vault", icon: Compass },
-  { href: "/market", label: "Thrift & sell", icon: Store },
+  { href: "/friends", label: "Friends", icon: Users },
   { href: "/saved", label: "Saved", icon: Bookmark },
 ];
 
@@ -44,7 +44,7 @@ export function Rail() {
   );
 }
 
-export function TopBar({ onSell }) {
+export function TopBar() {
   const { user, currency, setCurrency, currencies } = useAura();
   const [q, setQ] = useState("");
   const router = useRouter();
@@ -64,7 +64,6 @@ export function TopBar({ onSell }) {
           {currencies.map((c) => <option key={c.code} value={c.code} style={{ background: "#110E1A" }}>{c.label}</option>)}
         </select>
       </label>
-      <button className="btn btn-ghost" onClick={onSell}><Tag size={16} /> Sell a piece</button>
       <Link href="/saved" className="chip"><User size={15} /> {user?.name ?? "guest"}</Link>
     </div>
   );

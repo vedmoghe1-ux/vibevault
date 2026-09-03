@@ -106,10 +106,12 @@ export function OutfitDetail({ outfit }) {
 
           <div className="detail-actions">
             <Magnetic>
-              <a className="btn btn-solid" href={ordered[0].url} target="_blank" rel="noopener noreferrer"
-                onClick={() => toastMsg("Opening the first piece in a new tab")}>
+              <motion.a className="btn btn-solid" href={ordered[0].url} target="_blank" rel="noopener noreferrer"
+                onClick={() => toastMsg("Opening the first piece in a new tab")}
+                animate={{ boxShadow: ["0 10px 34px -12px var(--a1)", "0 14px 40px -8px var(--a2)", "0 10px 34px -12px var(--a1)"] }}
+                transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}>
                 <ShoppingBag size={17} /> Get the look · {formatPrice(total)}
-              </a>
+              </motion.a>
             </Magnetic>
             <button className="btn btn-ghost" onClick={() => toggleSave(outfit.id)}>
               <Bookmark size={16} fill={isSaved ? "currentColor" : "none"} /> {isSaved ? "Saved" : "Save to vault"}
@@ -130,6 +132,7 @@ export function OutfitDetail({ outfit }) {
                   <div style={{ minWidth: 0 }}>
                     <p className="row-name">{it.name}</p>
                     <p className="kicker" style={{ marginTop: 3 }}>{it.slot} · {it.brand}</p>
+                    {it.description && <p className="row-why">"{it.description}" — why it's in this look</p>}
                   </div>
                   <div className="row-buy">
                     <span className="tabular row-price">{formatPrice(it.price)}</span>

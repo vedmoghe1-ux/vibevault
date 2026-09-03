@@ -1,14 +1,16 @@
 "use client";
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { SEED_LISTINGS, AESTHETICS } from "./data";
+import { SEED_LISTINGS, SEED_FRIENDS, AESTHETICS } from "./data";
 import { CURRENCIES, formatMoney } from "./currency";
 
 /* Single source of truth for session + user data.
-   Swap the three localStorage effects for Supabase calls:
+   Swap the four localStorage effects for Supabase calls:
      auth      -> supabase.auth.signInWithPassword / signUp / signInWithOAuth
-     profile   -> profiles table (vibes, budget, fit)
+     profile   -> profiles table (vibes, budget, fit, height/weight/shoeSize)
      saves     -> saves table (user_id, outfit_id)
-     listings  -> listings table + realtime channel                          */
+     friends   -> friends table (user_id, friend_id)
+     groups    -> groups + group_members tables
+     shares    -> shared_outfits table (group_id, outfit_id, shared_by, rating) */
 
 const Ctx = createContext(null);
 export const useAura = () => useContext(Ctx);
@@ -22,6 +24,9 @@ export function AuraProvider({ children }) {
   const [toast, setToastRaw] = useState(null);
   const [hydrated, setHydrated] = useState(false);
   const [currency, setCurrency] = useState("INR");
+  const [friendIds, setFriendIds] = useState([]);
+  const [groups, setGroups] = useState([]);
+  const [shares, setShares] = useState([]);
 
   useEffect(() => {
     try {
@@ -32,6 +37,9 @@ export function AuraProvider({ children }) {
         setSaved(s.saved ?? []);
         if (s.listings) setListings(s.listings);
         if (s.currency) setCurrency(s.currency);
+        setFriendIds(s.friendIds ?? []);
+        setGroups(s.groups ?? []);
+        setShares(s.shares ?? []);
       }
     } catch {}
     setHydrated(true);
@@ -39,8 +47,8 @@ export function AuraProvider({ children }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings, currency }));
-  }, [user, saved, listings, currency, hydrated]);
+    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings, currency, friendIds, groups, shares }));
+  }, [user, saved, listings, currency, friendIds, groups, shares, hydrated]);
 
   const toastMsg = useCallback((msg) => {
     setToastRaw(msg);
@@ -64,6 +72,32 @@ export function AuraProvider({ children }) {
     setListings((s) => s.map((l) => (l.id === id ? { ...l, promoted: true, tier } : l)));
   }, []);
 
+  const toggleFriend = useCallback((id) => {
+    setFriendIds((s) => {
+      const has = s.includes(id);
+      const friend = SEED_FRIENDS.find((f) => f.id === id);
+      toastMsg(has ? `Removed ${friend?.handle ?? "friend"}` : `${friend?.handle ?? "Friend"} added`);
+      return has ? s.filter((x) => x !== id) : [...s, id];
+    });
+  }, [toastMsg]);
+
+  const createGroup = useCallback(({ name, emoji, memberIds }) => {
+    const group = { id: `g${Date.now()}`, name, emoji, memberIds, createdAt: new Date().toISOString().slice(0, 10) };
+    setGroups((s) => [group, ...s]);
+    toastMsg(`${name} created`);
+    return group.id;
+  }, [toastMsg]);
+
+  const shareOutfit = useCallback((groupId, outfitId) => {
+    const share = { id: `s${Date.now()}`, groupId, outfitId, sharedBy: user?.name ?? "you", rating: 50, votes: 1 };
+    setShares((s) => [share, ...s]);
+    toastMsg("Shared to the group");
+  }, [toastMsg, user]);
+
+  const rateShare = useCallback((shareId, rating) => {
+    setShares((s) => s.map((sh) => (sh.id === shareId ? { ...sh, rating } : sh)));
+  }, []);
+
   const theme = user?.vibes?.[0]
     ? AESTHETICS.find((a) => a.id === user.vibes[0])
     : AESTHETICS[0];
@@ -75,6 +109,7 @@ export function AuraProvider({ children }) {
       user, setUser, saved, toggleSave, listings, publish, promote,
       toast, toastMsg, hydrated,
       currency, setCurrency, currencies: CURRENCIES, formatPrice,
+      friendIds, toggleFriend, groups, createGroup, shares, shareOutfit, rateShare,
       themeVars: { "--a1": theme.a1, "--a2": theme.a2 },
     }}>
       {children}
