@@ -52,7 +52,10 @@ function Vault() {
   return (
     <Page>
       <header style={{ maxWidth: "62ch" }}>
-        <h1 style={{ fontSize: "clamp(42px, 6.5vw, 78px)" }}>Twelve aesthetics.<br />Every piece linked.</h1>
+        <h1 style={{ fontSize: "clamp(42px, 6.5vw, 78px)" }}>Sixteen aesthetics.<br />Every piece linked.</h1>
+        <p className="muted lede" style={{ fontSize: 17, fontWeight: 600, color: "var(--text)" }}>
+          Curated by India's top style directors so you never have to second-guess the fit.
+        </p>
         <p className="muted lede" style={{ fontSize: 16.5 }}>
           Open a style to see looks other people actually assembled — then take any one apart down to the shoes.
         </p>

@@ -2,70 +2,28 @@
 import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, Bookmark, ChevronLeft, Flame, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Bookmark, ChevronLeft, Flame, ShoppingBag, X } from "lucide-react";
 import { byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
-import { Avatar } from "./avatar";
 import { Badge } from "./ui";
 import { Magnetic, ease, useAmbientTheme } from "./motion";
 import { posterBg } from "./cards";
+import { FlatLay } from "./flatlay";
 
 const SLOTS = ["Outerwear", "Top", "Bottoms", "Shoes", "Accessories"];
-const HOT = { Outerwear: [24, 30], Top: [50, 30], Bottoms: [50, 58], Shoes: [50, 82], Accessories: [74, 46] };
-
-export function Mannequin({ items, activeSlot, onSlot, palette }) {
-  const tone = (s, f) => items.find((i) => i.slot === s)?.tone || f;
-  const has = (s) => items.some((i) => i.slot === s);
-  const props = (s) => ({
-    animate: { opacity: activeSlot && activeSlot !== s ? 0.28 : 1, y: activeSlot === s ? -3 : 0 },
-    transition: { duration: 0.35, ease },
-    onClick: () => has(s) && onSlot(activeSlot === s ? null : s),
-    style: { cursor: has(s) ? "pointer" : "default" },
-  });
-  return (
-    <svg viewBox="0 0 240 400" className="mannequin" role="img" aria-label="Outfit breakdown figure">
-      <defs>
-        <linearGradient id="mg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={palette.a1} stopOpacity=".22" />
-          <stop offset="100%" stopColor={palette.a2} stopOpacity=".1" />
-        </linearGradient>
-      </defs>
-      <rect width="240" height="400" fill="url(#mg)" />
-      <circle cx="120" cy="52" r="26" fill="rgba(255,255,255,.13)" />
-      <motion.g {...props("Bottoms")}>
-        <path d="M92 196 h56 l10 116 h-30 l-8 -74 -8 74 h-30 z" fill={tone("Bottoms", "#2A2A31")} />
-      </motion.g>
-      <motion.g {...props("Shoes")}>
-        <rect x="88" y="312" width="34" height="17" rx="7" fill={tone("Shoes", "#2A2A31")} />
-        <rect x="128" y="312" width="34" height="17" rx="7" fill={tone("Shoes", "#2A2A31")} />
-      </motion.g>
-      <motion.g {...props("Top")}>
-        <path d="M88 88 q32 -14 64 0 l8 44 -14 6 v70 h-52 v-70 l-14 -6 z" fill={tone("Top", "#3A3A44")} />
-      </motion.g>
-      {has("Outerwear") && (
-        <motion.g {...props("Outerwear")}>
-          <path d="M84 90 q-16 8 -18 30 l-6 62 18 4 6 -46 v76 h20 v-118 z" fill={tone("Outerwear", "#3A3A44")} />
-          <path d="M156 90 q16 8 18 30 l6 62 -18 4 -6 -46 v76 h-20 v-118 z" fill={tone("Outerwear", "#3A3A44")} />
-        </motion.g>
-      )}
-      {has("Accessories") && (
-        <motion.g {...props("Accessories")}>
-          <rect x="104" y="150" width="32" height="9" rx="4" fill={tone("Accessories", "#8E8AA3")} />
-          <circle cx="176" cy="196" r="13" fill={tone("Accessories", "#8E8AA3")} opacity=".9" />
-        </motion.g>
-      )}
-    </svg>
-  );
-}
+// Generic fallback for outfits without their own hand-placed hotspots —
+// tuned for a standard centered, front-facing full-body shot.
+const DEFAULT_HOTSPOTS = { Outerwear: [30, 32], Top: [50, 32], Bottoms: [50, 64], Shoes: [50, 93], Accessories: [70, 46] };
 
 export function OutfitDetail({ outfit }) {
   const a = byId(outfit.aesthetic);
   useAmbientTheme(a.a1, a.a2);
-  const { saved, toggleSave, toastMsg, formatPrice, user } = useAura();
-  const [slot, setSlot] = useState(null);
+  const { saved, toggleSave, toastMsg, formatPrice } = useAura();
+  const [openItem, setOpenItem] = useState(null);
   const isSaved = saved.includes(outfit.id);
   const ordered = SLOTS.flatMap((s) => outfit.items.filter((i) => i.slot === s));
   const total = outfit.items.reduce((s, i) => s + i.price, 0);
+  const hotspots = { ...DEFAULT_HOTSPOTS, ...(outfit.hotspots ?? {}) };
 
   return (
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}
@@ -74,35 +32,25 @@ export function OutfitDetail({ outfit }) {
 
       <div className="detail">
         <div className="poster glass detail-art">
-          <div className="poster-bg" style={{ background: posterBg(outfit) }} />
-          <div className="grain" />
-          <div className="detail-figure">
-            {user?.avatar
-              ? <Avatar skin={user.avatar.skin} hair={user.avatar.hair} hairColor={user.avatar.hairColor} items={outfit.items} activeSlot={slot} onSlot={setSlot} size={100} />
-              : <Mannequin items={outfit.items} activeSlot={slot} onSlot={setSlot} palette={a} />}
-          </div>
+          {outfit.image ? (
+            <img src={outfit.image} alt={outfit.title} className="detail-hero-photo" />
+          ) : (
+            <>
+              <div className="poster-bg" style={{ background: posterBg(outfit) }} />
+              <div className="grain" />
+              <div className="poster-flatlay" style={{ inset: "6%" }}><FlatLay items={outfit.items} /></div>
+            </>
+          )}
+
           {ordered.map((it) => {
-            const [x, y] = HOT[it.slot] ?? [50, 50];
-            const goToItem = () => {
-              setSlot(it.slot);
-              document.getElementById(`ledger-${it.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
-            };
+            const [x, y] = hotspots[it.slot] ?? [50, 50];
             return (
-              <button key={it.id} className={`hot ${slot ? "" : "hot-pulse"}`} data-on={slot === it.slot}
+              <button key={it.id} className="hot hot-pulse" data-on={openItem?.id === it.id}
                 style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)" }}
-                onMouseEnter={() => setSlot(it.slot)}
-                onMouseLeave={() => setSlot(null)}
-                onClick={goToItem}
-                aria-label={`Highlight ${it.slot}: ${it.name}`}><i /></button>
+                onClick={() => setOpenItem(it)}
+                aria-label={`View ${it.slot}: ${it.name}`}><i /></button>
             );
           })}
-          <div className="detail-hint">
-            <AnimatePresence mode="wait">
-              <motion.span key={slot ?? "none"} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-                <Badge>{slot ? `${slot} · ${outfit.items.find((i) => i.slot === slot)?.brand}` : "Tap a dot to isolate a piece"}</Badge>
-              </motion.span>
-            </AnimatePresence>
-          </div>
         </div>
 
         <div>
@@ -128,38 +76,61 @@ export function OutfitDetail({ outfit }) {
             </button>
           </div>
 
-          <div className="detail-head">
-            <h2 style={{ fontSize: 20 }}>Every piece in this look</h2>
-            <span className="kicker">{ordered.length} items · {formatPrice(total)} total</span>
-          </div>
+          <p className="kicker" style={{ marginTop: 22 }}>Tap a dot on the photo, or pick a piece below</p>
 
-          <div className="glass ledger">
-            {ordered.map((it, n) => (
-              <div key={it.id}>
-                <div id={`ledger-${it.id}`} className="row" data-on={slot === it.slot}
-                  onMouseEnter={() => setSlot(it.slot)} onMouseLeave={() => setSlot(null)}>
-                  <span className="swatch" style={it.image ? undefined : { background: it.tone }}>
-                    {it.image && <img src={it.image} alt="" className="swatch-img" />}
-                  </span>
-                  <div style={{ minWidth: 0 }}>
-                    <p className="row-name">{it.name}</p>
-                    <p className="kicker" style={{ marginTop: 3 }}>{it.slot} · {it.brand}</p>
-                    {it.description && <p className="row-why">{it.description}</p>}
-                  </div>
-                  <div className="row-buy">
-                    <span className="tabular row-price">{formatPrice(it.price)}</span>
-                    <a className="btn btn-ghost btn-xs" href={it.url} target="_blank" rel="noopener noreferrer">
-                      Buy <ArrowUpRight size={14} />
-                    </a>
-                  </div>
-                </div>
-                {n < ordered.length - 1 && <hr className="hair" style={{ margin: "0 16px" }} />}
-              </div>
+          <div className="quick-list">
+            {ordered.map((it) => (
+              <button key={it.id} className="quick-item" onClick={() => setOpenItem(it)}>
+                <span className="quick-swatch">
+                  {it.image ? <img src={it.image} alt="" /> : <span style={{ background: it.tone, display: "block", width: "100%", height: "100%" }} />}
+                </span>
+                <span className="quick-name">{it.name}</span>
+                <span className="tabular quick-price">{formatPrice(it.price)}</span>
+              </button>
             ))}
           </div>
-          <p className="kicker" style={{ marginTop: 12 }}>Links open a live product search at each brand. Prices are indicative and refresh when a seller updates a listing.</p>
+          <p className="kicker" style={{ marginTop: 12 }}>Links open the retailer's page in a new tab. Prices refresh when a seller updates a listing.</p>
         </div>
       </div>
+
+      <ProductModal item={openItem} onClose={() => setOpenItem(null)} formatPrice={formatPrice} />
     </motion.div>
+  );
+}
+
+/* Apple-style liquid glass product pop-up. Opens from a hotspot tap or
+   the quick list below — same modal either way, so there's one place
+   this ever needs to look right. */
+function ProductModal({ item, onClose, formatPrice }) {
+  return (
+    <AnimatePresence>
+      {item && (
+        <motion.div className="scrim" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+          <motion.div className="liquid-glass product-modal"
+            initial={{ opacity: 0, y: 28, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 14, scale: 0.97 }}
+            transition={{ duration: 0.38, ease }}>
+            <button className="product-modal-close" onClick={onClose} aria-label="Close"><X size={16} /></button>
+
+            <div className="product-modal-photo">
+              {item.image ? <img src={item.image} alt={item.name} /> : <span style={{ background: item.tone, display: "block", width: "100%", height: "100%" }} />}
+            </div>
+
+            <div className="product-modal-body">
+              <p className="kicker" style={{ color: "var(--a1)" }}>{item.brand}</p>
+              <h2 className="product-modal-title">{item.name}</h2>
+              {item.description && <p className="muted" style={{ fontSize: 13.5, marginTop: 6, fontStyle: "italic" }}>{item.description}</p>}
+              <p className="product-modal-price tabular">{formatPrice(item.price)}</p>
+
+              <Magnetic>
+                <a className="btn btn-solid" href={item.url} target="_blank" rel="noopener noreferrer" style={{ width: "100%", justifyContent: "center", marginTop: 16 }}>
+                  Shop now <ArrowUpRight size={16} />
+                </a>
+              </Magnetic>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }

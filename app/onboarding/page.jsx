@@ -6,11 +6,6 @@ import { Check, ChevronLeft, Sparkles, Flame } from "lucide-react";
 import { AESTHETICS, byId, BUDGET_TIERS } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Magnetic, ease } from "@/components/motion";
-import { Avatar } from "@/components/avatar";
-
-const SKIN_TONES = ["#3C2A21", "#6B4226", "#9C6B45", "#C68B59", "#E0AC79", "#F2D3B3"];
-const HAIR_COLORS = ["#1B1512", "#3B2A1E", "#6B4226", "#B8860B", "#C0392B", "#E8E2D8"];
-const HAIR_STYLES = ["short", "long", "curly", "bald", "buzz"];
 
 const FITS = ["Oversized", "Tailored", "Cropped", "Layered", "Body-skimming", "Long line"];
 
@@ -34,9 +29,6 @@ export default function Onboarding() {
   const [height, setHeight] = useState(user?.height ?? "");
   const [weight, setWeight] = useState(user?.weight ?? "");
   const [shoeSize, setShoeSize] = useState(user?.shoeSize ?? "");
-  const [skin, setSkin] = useState(user?.avatar?.skin ?? SKIN_TONES[2]);
-  const [hair, setHair] = useState(user?.avatar?.hair ?? "short");
-  const [hairColor, setHairColor] = useState(user?.avatar?.hairColor ?? HAIR_COLORS[0]);
   const [launching, setLaunching] = useState(false);
 
   const toggleFit = (v) => setFit((s) => (s.includes(v) ? s.filter((x) => x !== v) : [...s, v]));
@@ -54,7 +46,6 @@ export default function Onboarding() {
     { title: "Where do you usually spend?", sub: "We hide the pieces that are wildly out of range.", ok: true },
     { title: "How do you like things to fit?", sub: "Optional, but it sharpens the recommendations.", ok: true },
     { title: "Your sizes, once and for all", sub: "Enter these now and you'll never have to type them again on this device.", ok: true },
-    { title: "Build your avatar", sub: "This is who tries on every outfit for you from here on.", ok: true },
   ];
   const cur = steps[step];
   const lead = vibes[0] ? byId(vibes[0]) : AESTHETICS[0];
@@ -74,7 +65,7 @@ export default function Onboarding() {
       <motion.div className="glass glass-hi onboard-card" animate={launching ? { scale: 1.04, opacity: 0 } : { scale: 1, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <div className="onboard-head">
           <span className="kicker">Step {step + 1} of {steps.length} · welcome, {user?.name ?? "friend"}</span>
-          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, budgetId, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } })}>
+          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, budgetId, fit, height, weight, shoeSize })}>
             Skip for now
           </button>
         </div>
@@ -151,39 +142,6 @@ export default function Onboarding() {
               </div>
             )}
 
-            {step === 4 && (
-              <div className="avatar-builder">
-                <div className="avatar-preview">
-                  <Avatar skin={skin} hair={hair} hairColor={hairColor} size={100} />
-                </div>
-                <div className="avatar-controls">
-                  <div>
-                    <p className="kicker" style={{ marginBottom: 8 }}>Skin tone</p>
-                    <div className="swatch-row">
-                      {SKIN_TONES.map((s) => (
-                        <button key={s} className="swatch-pick" data-on={skin === s} style={{ background: s }} onClick={() => setSkin(s)} aria-label="Pick skin tone" />
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="kicker" style={{ marginBottom: 8 }}>Hair style</p>
-                    <div className="chips">
-                      {HAIR_STYLES.map((h) => (
-                        <button key={h} className="chip" data-on={hair === h} onClick={() => setHair(h)} style={{ textTransform: "capitalize" }}>{h}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div>
-                    <p className="kicker" style={{ marginBottom: 8 }}>Hair color</p>
-                    <div className="swatch-row">
-                      {HAIR_COLORS.map((c) => (
-                        <button key={c} className="swatch-pick" data-on={hairColor === c} style={{ background: c }} onClick={() => setHairColor(c)} aria-label="Pick hair color" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {step === 0 && (
               <AnimatePresence mode="wait">
@@ -202,7 +160,7 @@ export default function Onboarding() {
           </button>
           <Magnetic>
             <button className="btn btn-solid" disabled={!cur.ok}
-              onClick={() => (step === steps.length - 1 ? finish({ vibes, budget: budgetName, budgetId, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } }) : setStep((s) => s + 1))}>
+              onClick={() => (step === steps.length - 1 ? finish({ vibes, budget: budgetName, budgetId, fit, height, weight, shoeSize }) : setStep((s) => s + 1))}>
               {step === steps.length - 1 ? "Open my vault" : "Continue"} <Sparkles size={16} />
             </button>
           </Magnetic>
