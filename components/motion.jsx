@@ -1,5 +1,5 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { motion, useMotionValue, useSpring, useTransform, useReducedMotion } from "framer-motion";
 
 export const ease = [0.2, 0.8, 0.3, 1];
@@ -96,3 +96,21 @@ export function Page({ children, className = "" }) {
   );
 }
 export const Rise = motion.div;
+
+/* Shifts the app-wide ambient background glow to a given aesthetic while
+   this page is open, then restores the user's own theme on the way out.
+   Reuses the existing root --a1/--a2 orbs, so nothing new renders — the
+   whole app just re-tints. */
+export function useAmbientTheme(a1, a2) {
+  useEffect(() => {
+    const root = document.documentElement;
+    const prevA1 = root.style.getPropertyValue("--a1");
+    const prevA2 = root.style.getPropertyValue("--a2");
+    root.style.setProperty("--a1", a1);
+    root.style.setProperty("--a2", a2);
+    return () => {
+      root.style.setProperty("--a1", prevA1);
+      root.style.setProperty("--a2", prevA2);
+    };
+  }, [a1, a2]);
+}

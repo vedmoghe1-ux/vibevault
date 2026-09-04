@@ -1,13 +1,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Sparkles, Compass, Users, Bookmark, LogOut, Search, User, X } from "lucide-react";
+import { Sparkles, Compass, Users, Bookmark, LogOut, Search, User, X, Shirt } from "lucide-react";
 import { useState } from "react";
 import { useAura } from "@/lib/store";
 
 export const NAV = [
   { href: "/for-you", label: "For you", icon: Sparkles },
   { href: "/vault", label: "Style vault", icon: Compass },
+  { href: "/studio", label: "Studio", icon: Shirt },
   { href: "/friends", label: "Friends", icon: Users },
   { href: "/saved", label: "Saved", icon: Bookmark },
 ];

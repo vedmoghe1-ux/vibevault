@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronLeft, Sparkles, Flame } from "lucide-react";
-import { AESTHETICS, byId } from "@/lib/data";
+import { AESTHETICS, byId, BUDGET_TIERS } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Magnetic, ease } from "@/components/motion";
 import { Avatar } from "@/components/avatar";
@@ -11,17 +11,6 @@ import { Avatar } from "@/components/avatar";
 const SKIN_TONES = ["#3C2A21", "#6B4226", "#9C6B45", "#C68B59", "#E0AC79", "#F2D3B3"];
 const HAIR_COLORS = ["#1B1512", "#3B2A1E", "#6B4226", "#B8860B", "#C0392B", "#E8E2D8"];
 const HAIR_STYLES = ["short", "long", "curly", "bald", "buzz"];
-
-/* Budget tiers, priced for the Indian market. "Main Character Energy" is
-   deliberately the visually loudest option — badge, glow, and the
-   middle position where the eye lands first — since it's the tier we
-   want the most people to land on. */
-const BUDGETS = [
-  { id: "thrift", range: "₹500 – ₹2,500", name: "Broke Bestie Era", emoji: "🫰" },
-  { id: "main", range: "₹2,500 – ₹5,000", name: "Main Character Energy", emoji: "✨", popular: true },
-  { id: "boss", range: "₹5,000 – ₹10,000", name: "Boss Era Budget", emoji: "💼" },
-  { id: "nolimit", range: "₹10,000+", name: "Old Money Whisper", emoji: "👑" },
-];
 
 const FITS = ["Oversized", "Tailored", "Cropped", "Layered", "Body-skimming", "Long line"];
 
@@ -39,7 +28,7 @@ export default function Onboarding() {
   const [step, setStep] = useState(0);
   const [vibes, setVibes] = useState(user?.vibes ?? []);
   const [budgetId, setBudgetId] = useState(
-    BUDGETS.find((b) => b.name === user?.budget)?.id ?? "main"
+    BUDGET_TIERS.find((b) => b.name === user?.budget)?.id ?? "main"
   );
   const [fit, setFit] = useState(user?.fit ?? []);
   const [height, setHeight] = useState(user?.height ?? "");
@@ -58,7 +47,7 @@ export default function Onboarding() {
     setLaunching(true);
     setTimeout(() => router.push("/for-you"), 480);
   };
-  const budgetName = BUDGETS.find((b) => b.id === budgetId)?.name ?? BUDGETS[1].name;
+  const budgetName = BUDGET_TIERS.find((b) => b.id === budgetId)?.name ?? BUDGETS[1].name;
 
   const steps = [
     { title: "What's your core vibe?", sub: "Pick at least two. This is what the For You feed is built from.", ok: vibes.length >= 2 },
@@ -85,7 +74,7 @@ export default function Onboarding() {
       <motion.div className="glass glass-hi onboard-card" animate={launching ? { scale: 1.04, opacity: 0 } : { scale: 1, opacity: 1 }} transition={{ duration: 0.45, ease }}>
         <div className="onboard-head">
           <span className="kicker">Step {step + 1} of {steps.length} · welcome, {user?.name ?? "friend"}</span>
-          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } })}>
+          <button className="btn btn-quiet" onClick={() => finish({ vibes: vibes.length ? vibes : ["clean-girl", "streetwear"], budget: budgetName, budgetId, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } })}>
             Skip for now
           </button>
         </div>
@@ -115,7 +104,7 @@ export default function Onboarding() {
 
             {step === 1 && (
               <div className="budget-grid">
-                {BUDGETS.map((b) => (
+                {BUDGET_TIERS.map((b) => (
                   <motion.button key={b.id} className="budget-card" data-on={budgetId === b.id} data-popular={b.popular}
                     whileTap={{ scale: 0.96 }} onClick={() => setBudgetId(b.id)}
                     animate={b.popular && budgetId !== b.id ? { boxShadow: ["0 0 0 rgba(255,111,165,0)", "0 0 26px rgba(255,111,165,.35)", "0 0 0 rgba(255,111,165,0)"] } : {}}
@@ -213,7 +202,7 @@ export default function Onboarding() {
           </button>
           <Magnetic>
             <button className="btn btn-solid" disabled={!cur.ok}
-              onClick={() => (step === steps.length - 1 ? finish({ vibes, budget: budgetName, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } }) : setStep((s) => s + 1))}>
+              onClick={() => (step === steps.length - 1 ? finish({ vibes, budget: budgetName, budgetId, fit, height, weight, shoeSize, avatar: { skin, hair, hairColor } }) : setStep((s) => s + 1))}>
               {step === steps.length - 1 ? "Open my vault" : "Continue"} <Sparkles size={16} />
             </button>
           </Magnetic>

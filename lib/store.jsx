@@ -27,6 +27,7 @@ export function AuraProvider({ children }) {
   const [friendIds, setFriendIds] = useState([]);
   const [groups, setGroups] = useState([]);
   const [shares, setShares] = useState([]);
+  const [studios, setStudios] = useState([]);
 
   useEffect(() => {
     try {
@@ -40,6 +41,7 @@ export function AuraProvider({ children }) {
         setFriendIds(s.friendIds ?? []);
         setGroups(s.groups ?? []);
         setShares(s.shares ?? []);
+        setStudios(s.studios ?? []);
       }
     } catch {}
     setHydrated(true);
@@ -47,8 +49,8 @@ export function AuraProvider({ children }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings, currency, friendIds, groups, shares }));
-  }, [user, saved, listings, currency, friendIds, groups, shares, hydrated]);
+    localStorage.setItem(KEY, JSON.stringify({ user, saved, listings, currency, friendIds, groups, shares, studios }));
+  }, [user, saved, listings, currency, friendIds, groups, shares, studios, hydrated]);
 
   const toastMsg = useCallback((msg) => {
     setToastRaw(msg);
@@ -89,14 +91,29 @@ export function AuraProvider({ children }) {
   }, [toastMsg]);
 
   const shareOutfit = useCallback((groupId, outfitId) => {
-    const share = { id: `s${Date.now()}`, groupId, outfitId, sharedBy: user?.name ?? "you", rating: 50, votes: 1 };
+    const share = { id: `s${Date.now()}`, groupId, outfitId, sharedBy: user?.name ?? "you", reactions: { fire: 0, neutral: 0, poop: 0 } };
     setShares((s) => [share, ...s]);
     toastMsg("Shared to the group");
   }, [toastMsg, user]);
 
-  const rateShare = useCallback((shareId, rating) => {
-    setShares((s) => s.map((sh) => (sh.id === shareId ? { ...sh, rating } : sh)));
+  const react = useCallback((shareId, kind) => {
+    setShares((s) => s.map((sh) => (sh.id === shareId
+      ? { ...sh, reactions: { ...sh.reactions, [kind]: (sh.reactions?.[kind] ?? 0) + 1 } }
+      : sh)));
   }, []);
+
+  const saveStudio = useCallback((studio) => {
+    setStudios((s) => {
+      const exists = s.some((st) => st.id === studio.id);
+      toastMsg(exists ? "Look updated" : "Look saved to your profile");
+      return exists ? s.map((st) => (st.id === studio.id ? studio : st)) : [studio, ...s];
+    });
+  }, [toastMsg]);
+
+  const deleteStudio = useCallback((id) => {
+    setStudios((s) => s.filter((st) => st.id !== id));
+    toastMsg("Look deleted");
+  }, [toastMsg]);
 
   const theme = user?.vibes?.[0]
     ? AESTHETICS.find((a) => a.id === user.vibes[0])
@@ -109,7 +126,8 @@ export function AuraProvider({ children }) {
       user, setUser, saved, toggleSave, listings, publish, promote,
       toast, toastMsg, hydrated,
       currency, setCurrency, currencies: CURRENCIES, formatPrice,
-      friendIds, toggleFriend, groups, createGroup, shares, shareOutfit, rateShare,
+      friendIds, toggleFriend, groups, createGroup, shares, shareOutfit, react,
+      studios, saveStudio, deleteStudio,
       themeVars: { "--a1": theme.a1, "--a2": theme.a2 },
     }}>
       {children}

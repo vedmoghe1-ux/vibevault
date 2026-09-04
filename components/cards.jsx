@@ -96,7 +96,7 @@ export function AestheticCard({ a, count, picked }) {
               <span className="badge tabular" style={{ marginLeft: "auto" }}>{count} looks</span>
             </div>
             <div>
-              <h3 style={{ fontSize: 32 }}>{a.name}</h3>
+              <h3 style={{ fontSize: "clamp(22px, 5.5vw, 32px)" }}>{a.name}</h3>
               <p className="poster-sub">{a.tagline}</p>
               <p className="kicker" style={{ marginTop: 10 }}>{a.note}</p>
             </div>

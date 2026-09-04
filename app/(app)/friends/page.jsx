@@ -4,13 +4,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, UserPlus, UserCheck, Plus, ChevronLeft, Share2 } from "lucide-react";
 import { SEED_FRIENDS, OUTFITS, byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
-import { RatingSlider } from "@/components/rating-slider";
+import { ReactionButtons } from "@/components/reactions";
 import { GroupModal } from "@/components/group-modal";
 import { ShareOutfitModal } from "@/components/share-outfit-modal";
 import { Page, ease } from "@/components/motion";
 
 export default function Friends() {
-  const { friendIds, toggleFriend, groups, shares, rateShare } = useAura();
+  const { friendIds, toggleFriend, groups, shares, react } = useAura();
   const [q, setQ] = useState("");
   const [groupModal, setGroupModal] = useState(false);
   const [shareModal, setShareModal] = useState(null); // groupId or null
@@ -47,7 +47,7 @@ export default function Friends() {
                     <p className="feed-title">{outfit.title}</p>
                     <p className="kicker">{s.sharedBy} shared · {a.name}</p>
                   </div>
-                  <RatingSlider value={s.rating} onChange={(v) => rateShare(s.id, v)} />
+                  <ReactionButtons counts={s.reactions} onReact={(kind) => react(s.id, kind)} />
                 </div>
               </motion.div>
             );

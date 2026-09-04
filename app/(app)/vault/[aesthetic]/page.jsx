@@ -3,10 +3,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
-import { OUTFITS, byId } from "@/lib/data";
+import { OUTFITS, byId, BUDGET_TIERS, outfitPriceINR } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { OutfitCard } from "@/components/cards";
-import { Page } from "@/components/motion";
+import { Page, useAmbientTheme } from "@/components/motion";
 
 const SLOTS = ["All", "Outerwear", "Top", "Bottoms", "Shoes", "Accessories"];
 
@@ -14,9 +14,14 @@ export default function AestheticPage({ params }) {
   const a = byId(params.aesthetic);
   const { saved, toggleSave } = useAura();
   const [slot, setSlot] = useState("All");
+  const [price, setPrice] = useState("all");
+  useAmbientTheme(a.a1, a.a2);
 
   const looks = OUTFITS.filter((o) => o.aesthetic === a.id);
-  const shown = slot === "All" ? looks : looks.filter((o) => o.items.some((i) => i.slot === slot));
+  const priceTier = BUDGET_TIERS.find((t) => t.id === price);
+  const shown = looks
+    .filter((o) => slot === "All" || o.items.some((i) => i.slot === slot))
+    .filter((o) => !priceTier || (outfitPriceINR(o) >= priceTier.min && outfitPriceINR(o) <= priceTier.max));
 
   return (
     <Page>
@@ -33,13 +38,21 @@ export default function AestheticPage({ params }) {
           </div>
         </header>
 
-        <motion.div className="chips" layout style={{ margin: "26px 0 18px" }}>
+        <motion.div className="chips" layout style={{ margin: "26px 0 10px" }}>
           {SLOTS.map((s) => (
             <motion.button layout key={s} className="chip" data-on={slot === s} whileTap={{ scale: 0.93 }} onClick={() => setSlot(s)}>
               {s === "All" ? "Every look" : `Has ${s.toLowerCase()}`}
             </motion.button>
           ))}
         </motion.div>
+
+        <div className="price-filter" style={{ marginBottom: 18 }}>
+          <span className="kicker" style={{ marginRight: 4 }}>Price</span>
+          <button className="chip" data-on={price === "all"} onClick={() => setPrice("all")}>Any budget</button>
+          {BUDGET_TIERS.map((t) => (
+            <button key={t.id} className="chip" data-on={price === t.id} onClick={() => setPrice(t.id)}>{t.emoji} {t.range}</button>
+          ))}
+        </div>
 
         <motion.div className="grid-cards" layout>
           <AnimatePresence mode="popLayout">
@@ -52,12 +65,12 @@ export default function AestheticPage({ params }) {
         {!shown.length && (
           <div className="glass empty">
             <p style={{ fontWeight: 600 }}>
-              {looks.length === 0 ? `${a.name} looks are coming soon.` : `No ${a.name} look uses that piece yet.`}
+              {looks.length === 0 ? `${a.name} looks are coming soon.` : `No ${a.name} look matches those filters yet.`}
             </p>
             <p className="muted" style={{ marginTop: 8, fontSize: 14.5 }}>
               {looks.length === 0
                 ? "This category is set up and ready — outfits get added here as they're curated."
-                : <>Clear the filter, or build the look yourself and list it in Thrift &amp; Sell.</>}
+                : "Try clearing the price or piece filter."}
             </p>
           </div>
         )}

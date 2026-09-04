@@ -78,6 +78,24 @@ create table promotions (
   stripe_id   text
 );
 
+-- Studio Canvas: one row per saved look. `canvas_items` holds the full
+-- layer stack as JSON — each entry mirrors CanvasItem's shape in the
+-- client (uid, name, slot, image, tone, x, y, scale, rotation, z), so
+-- loading a saved look is a straight JSON.parse back into React state.
+create table user_studios (
+  id            uuid primary key default gen_random_uuid(),
+  user_id       uuid references profiles(id) on delete cascade,
+  title         text not null,
+  tags          text[] default '{}',              -- aesthetic ids this look combines
+  base_type     text not null check (base_type in ('silhouette','photo')),
+  base_photo    text,                              -- storage path, only when base_type = 'photo'
+  canvas_items  jsonb not null default '[]',
+  created_at    timestamptz default now(),
+  updated_at    timestamptz default now()
+);
+alter table user_studios enable row level security;
+create policy "own studios" on user_studios for all using (auth.uid() = user_id);
+
 -- Feed ranking used by /for-you. Ships the same weighting the client does now.
 create or replace view recommended_outfits as
 select o.*,

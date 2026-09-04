@@ -7,7 +7,7 @@ import { byId } from "@/lib/data";
 import { useAura } from "@/lib/store";
 import { Avatar } from "./avatar";
 import { Badge } from "./ui";
-import { Magnetic, ease } from "./motion";
+import { Magnetic, ease, useAmbientTheme } from "./motion";
 import { posterBg } from "./cards";
 
 const SLOTS = ["Outerwear", "Top", "Bottoms", "Shoes", "Accessories"];
@@ -60,6 +60,7 @@ export function Mannequin({ items, activeSlot, onSlot, palette }) {
 
 export function OutfitDetail({ outfit }) {
   const a = byId(outfit.aesthetic);
+  useAmbientTheme(a.a1, a.a2);
   const { saved, toggleSave, toastMsg, formatPrice, user } = useAura();
   const [slot, setSlot] = useState(null);
   const isSaved = saved.includes(outfit.id);
@@ -82,10 +83,16 @@ export function OutfitDetail({ outfit }) {
           </div>
           {ordered.map((it) => {
             const [x, y] = HOT[it.slot] ?? [50, 50];
+            const goToItem = () => {
+              setSlot(it.slot);
+              document.getElementById(`ledger-${it.id}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+            };
             return (
               <button key={it.id} className={`hot ${slot ? "" : "hot-pulse"}`} data-on={slot === it.slot}
                 style={{ left: `${x}%`, top: `${y}%`, transform: "translate(-50%,-50%)" }}
-                onClick={() => setSlot(slot === it.slot ? null : it.slot)}
+                onMouseEnter={() => setSlot(it.slot)}
+                onMouseLeave={() => setSlot(null)}
+                onClick={goToItem}
                 aria-label={`Highlight ${it.slot}: ${it.name}`}><i /></button>
             );
           })}
@@ -129,7 +136,7 @@ export function OutfitDetail({ outfit }) {
           <div className="glass ledger">
             {ordered.map((it, n) => (
               <div key={it.id}>
-                <div className="row" data-on={slot === it.slot}
+                <div id={`ledger-${it.id}`} className="row" data-on={slot === it.slot}
                   onMouseEnter={() => setSlot(it.slot)} onMouseLeave={() => setSlot(null)}>
                   <span className="swatch" style={it.image ? undefined : { background: it.tone }}>
                     {it.image && <img src={it.image} alt="" className="swatch-img" />}
