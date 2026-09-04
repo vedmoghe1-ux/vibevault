@@ -101,12 +101,21 @@ function AuthArt() {
   const sample = OUTFITS.find((o) => o.aesthetic === a.id);
   return (
     <div className="glass auth-art">
-      <motion.div className="auth-art-bg" animate={{ opacity: 1 }}
-        style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}55, transparent 70%), radial-gradient(60% 60% at 75% 80%, ${a.a2}44, transparent 70%), ${a.tone}`, transition: "background 1.1s ease" }} />
+      {a.image ? (
+        <AnimatePresence mode="wait">
+          <motion.img key={a.id} src={a.image} alt="" className="auth-art-photo"
+            initial={{ opacity: 0, scale: 1.04 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }}
+            transition={{ duration: 0.6, ease }} />
+        </AnimatePresence>
+      ) : (
+        <motion.div className="auth-art-bg" animate={{ opacity: 1 }}
+          style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}55, transparent 70%), radial-gradient(60% 60% at 75% 80%, ${a.a2}44, transparent 70%), ${a.tone}`, transition: "background 1.1s ease" }} />
+      )}
+      <div className="poster-scrim" />
       <div className="grain" />
       <div className="auth-art-body">
         <p className="kicker">the vault</p>
-        {sample && (
+        {!a.image && sample && (
           <AnimatePresence mode="wait">
             <motion.div key={a.id} className="auth-art-flatlay" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.5, ease }}>
               <FlatLay items={sample.items} />

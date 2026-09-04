@@ -87,7 +87,14 @@ export function AestheticCard({ a, count, picked }) {
     <ScrollReveal>
       <Tilt max={6} style={{ "--a1": a.a1, "--a2": a.a2 }}>
         <Link href={`/vault/${a.id}`} className="poster glass" style={{ height: 250, display: "block" }}>
-          <div className="poster-bg" style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}66, transparent 70%), radial-gradient(60% 60% at 78% 82%, ${a.a2}55, transparent 70%), ${a.tone}` }} />
+          {a.image ? (
+            <>
+              <img src={a.image} alt="" className="poster-photo" />
+              <div className="poster-scrim" />
+            </>
+          ) : (
+            <div className="poster-bg" style={{ background: `radial-gradient(70% 60% at 30% 20%, ${a.a1}66, transparent 70%), radial-gradient(60% 60% at 78% 82%, ${a.a2}55, transparent 70%), ${a.tone}` }} />
+          )}
           <div className="grain" />
           <div className="tilt-glare" />
           <div className="poster-body">

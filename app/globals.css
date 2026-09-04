@@ -96,6 +96,7 @@ input, textarea, select { font: inherit; color: inherit; }
 .poster-flatlay { position: absolute; inset: 0; display: grid; place-items: center; filter: drop-shadow(0 14px 22px rgba(0,0,0,.35)); }
 .poster-flatlay svg { width: 62%; height: 62%; }
 .poster-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.poster-scrim { position: absolute; inset: 0; background: linear-gradient(180deg, rgba(10,9,16,.15) 0%, rgba(10,9,16,.35) 55%, rgba(10,9,16,.88) 100%); }
 
 /* hotspot ---------------------------------------------------------- */
 .hot { position: absolute; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
@@ -234,6 +235,13 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; touch-act
   .friend-row { padding: 10px; }
   .group-card { padding: 14px; }
 }
+@media (max-width: 860px) {
+  .scrim { display: flex; align-items: center; justify-content: center; padding: 18px; }
+  .product-modal { width: 100%; max-width: 420px; margin: 0 auto; }
+  .product-modal-body { text-align: center; }
+  .product-modal-body .btn { margin-left: auto; margin-right: auto; }
+  .grid-cards, .grid-cards-sm { justify-content: center; }
+}
 @media (max-width: 420px) {
   .h1, .auth-h1 { font-size: clamp(28px, 9vw, 38px); }
 }
@@ -289,6 +297,7 @@ button, a, [role="button"] { -webkit-tap-highlight-color: transparent; touch-act
 .social .btn { flex: 1 1 120px; }
 .auth-art { margin: 18px; border-radius: 28px; position: relative; overflow: hidden; display: grid; place-items: center; }
 .auth-art-bg { position: absolute; inset: 0; }
+.auth-art-photo { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .auth-art-body { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center;
   justify-content: center; gap: 18px; text-align: center; padding: 30px; width: 100%; }
 .auth-art-flatlay { width: 130px; height: 130px; filter: drop-shadow(0 16px 26px rgba(0,0,0,.4)); }
